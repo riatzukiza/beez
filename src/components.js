@@ -6,6 +6,8 @@ import * as tf from '@tensorflow/tfjs';
 class Acceleration extends Vec3Component {
     update() {
         let vel = this.entity.getComponent(velocity);
+//        if(this.x && !Number.isNaN(this.x)) console.log("acceleration",{ax:this.x,ay:this.y,az:this.z})
+
         vel.x = this.x + vel.x
         vel.y = this.y + vel.y
         vel.z = this.z + vel.z
@@ -45,18 +47,49 @@ class Renderable extends EntityComponent {
     }
 }
 
+const pheremones = tf.variable(tf.fill([200,200,200,3],0))
 class Incentive extends EntityComponent {
-    update() {
+    async update() {
+        let buf = await pheremones.buffer()
+        let pos = this.entity.getComponent(positioning)
+        let {x,y,z} = pos;
+        x = Math.round(100 + x)
+        y = Math.round(100 + y)
+        z = Math.round(100 + z)
+
+        let px = buf.get(x,y,z,0)
+        let py = buf.get(x,y,z,1)
+        let pz = buf.get(x,y,z,2)
+
+        let accel = this.entity.getComponent(acceleration)
+
+        const factor = 0.3
+
+        // accel.x = px * factor
+        // accel.y = py * factor
+        // accel.y = py * factor
+        // if(x) console.log("pos",{x,y,z})
+        // if(px) console.log("pheremones",{px,py,pz})
+        // if(accel.x && !Number.isNaN(accel.x)) console.log("acceleration",{ax:accel.x,ay:accel.y,az:accel.z})
+
+        accel.x += (px + 0.1) * factor
+        accel.y += (py + 0.1) * factor
+        accel.z += (pz + 0.1) * factor
+
+        buf.set(x,y,z,0,px+0.1)
+        buf.set(x,y,z,1,py+0.1)
+        buf.set(x,y,z,2,pz+0.1)
+        pheremones.assign(buf.toTensor())
 
     }
 }
 class Friction extends EntityComponent {
     update() {
 
-        let vel = this.entity.getComponent(velocity);
-        vel.x *= 0.5
-        vel.y *= 0.5
-        vel.z *= 0.5
+        let accel = this.entity.getComponent(acceleration);
+        accel.x *= 0.5
+        accel.y *= 0.5
+        accel.z *= 0.5
     }
 }
 
@@ -66,11 +99,9 @@ class Position extends Vec3Component {
 
         let vel = this.entity.getComponent(velocity);
         const limit = 10;
-        let {x,y,z} = vel 
-        console.log({x,y,z})
 
         if(this.x > limit || this.x < -limit) {
-            vel.x = vel.x * -1
+            vel.x = vel.x * -1;
         }
         if(this.y > limit || this.y < -limit) {
             vel.y = vel.y * -1

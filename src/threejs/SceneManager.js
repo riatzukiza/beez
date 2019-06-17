@@ -30,6 +30,7 @@ class SceneSubject {
         this.update = function(time) {
             //console.log(this.position.x,this.position.y,this.position.z)
             mesh.position.set(this.position.x,this.position.y,this.position.z);
+            mesh.scale.set(0.1,0.1,0.1)
 
         }
     }

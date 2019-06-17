@@ -5,9 +5,10 @@ export class EntityComponent {
     get system() {return this._system}
     get entity () {return this._entity}
     get data() {return this._data}
+
     update() {}
+
     constructor(entity,data,system) {
-        console.log("created a component",entity,data,system)
         this._entity = entity;
         this._data = data;
         this._system = system
@@ -37,9 +38,9 @@ export class EntitySystem {
         this._components.push(component)
         return component;
     }
-    update() {
+    async update() {
         for(let component of this._components) {
-            component.update();
+            await component.update();
         }
     }
 
