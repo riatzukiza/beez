@@ -347,6 +347,25 @@ export default class OpenSimplexNoise {
     return value * NORM_4D;
   }
 
+  octaveNoise3D( x: number, y: number, z: number, octaves: number, lacunarity: number, persistence: number )
+  {
+      let total    : number = 0,
+          frequency: number = 1,
+          amplitude: number = 1,
+          maxValue : number = 0; // Used for normalizing result to 0.0 - 1.0
+
+      for ( let i = 0; i < octaves; i++ )
+      {
+          total     += this.noise3D( x * frequency, y * frequency, z * frequency ) * amplitude;
+          maxValue  += amplitude;
+          amplitude *= persistence;
+          frequency *= 2;
+          frequency *= lacunarity;
+      }
+
+      return total / maxValue;
+  }
+
   private initialize() {
     const contributions2D: Contribution2[] = [];
     for (let i = 0; i < p2D.length; i += 4) {
