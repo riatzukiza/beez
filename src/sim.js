@@ -23,11 +23,13 @@ class Bee extends ECS.Entity {
 export const sim = new EventEmitter()
 
 sim.once("scene-ready",() => {
-    for(let i = 0;i < 100;i++) {
 
-        new Bee({x:0,y:0,z:-20})
-    } 
     let thread = Promise.resolve();
+
+    for(let i = 0;i < 100;i++) {
+        new Bee({x:0,y:0,z:0})
+    } 
+
     const render = async () => {
         thread =  ECS.systems.reduce(async (p,sys) => {
             await p;

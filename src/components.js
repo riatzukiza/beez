@@ -3,6 +3,8 @@ import {Entity,EntityComponent,EntitySystem,Vec3Component} from "./ecs"
 import {sim} from "./sim"
 import * as tf from '@tensorflow/tfjs';
 
+const LIMIT = 5
+
 class Acceleration extends Vec3Component {
     update() {
         let vel = this.entity.getComponent(velocity);
@@ -47,15 +49,15 @@ class Renderable extends EntityComponent {
     }
 }
 
-const pheremones = tf.variable(tf.fill([200,200,200,3],0))
+const pheremones = tf.variable(tf.fill([LIMIT * 2 +1,LIMIT * 2 + 1,LIMIT * 2 + 1,3],0))
 class Incentive extends EntityComponent {
     async update() {
         let buf = await pheremones.buffer()
         let pos = this.entity.getComponent(positioning)
         let {x,y,z} = pos;
-        x = Math.round(100 + x)
-        y = Math.round(100 + y)
-        z = Math.round(100 + z)
+        x = Math.round(LIMIT/2  + x)
+        y = Math.round(LIMIT/2  + y)
+        z = Math.round(LIMIT/2  + z)
 
         let px = buf.get(x,y,z,0)
         let py = buf.get(x,y,z,1)
@@ -98,22 +100,43 @@ class Position extends Vec3Component {
     update() {
 
         let vel = this.entity.getComponent(velocity);
-        const limit = 10;
+        let pos = this.entity.getComponent(positioning);
+
+        let limit = LIMIT;
 
         if(this.x > limit || this.x < -limit) {
             vel.x = vel.x * -1;
+
+            if(this.x > limit) {
+                pos.x = limit - 1
+            } else {
+                pos.x = -(limit -1)
+            }
         }
         if(this.y > limit || this.y < -limit) {
             vel.y = vel.y * -1
+
+            if(this.y > limit) {
+                pos.y = limit - 1
+            } else {
+                pos.y = -(limit -1)
+            }
         }
         if(this.z > limit || this.z < -limit) {
             vel.z = vel.z * -1
+
+            if(this.x > limit) {
+                pos.x = limit - 1
+            } else {
+                pos.x = -(limit -1)
+            }
         }
     }
 }
 
 
 export const positioning = new EntitySystem(Position)
+positioning.limit = LIMIT;
 export const acceleration = new EntitySystem(Acceleration)
 export const velocity = new EntitySystem(Velocity)
 export const wandering = new EntitySystem(WanderingBehavior)
