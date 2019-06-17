@@ -1,5 +1,7 @@
 import * as THREE from "three"
 
+import osn from "../lib/open-simplex-noise/index.ts";
+
 class SceneSubject {
     get position () {return this._position}
 
