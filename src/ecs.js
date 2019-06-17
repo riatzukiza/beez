@@ -16,7 +16,7 @@ export class EntityComponent {
 
 export class Vec3Component extends EntityComponent {
     get x() {return this.data.x}
-    get y() {return this.data.y}
+    get y() {return this.data.y} 
     get z() {return this.data.z}
 
     set x(v) {this.data.x = v}
