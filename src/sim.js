@@ -9,6 +9,8 @@ class Bee extends ECS.Entity {
 
         this.addComponent({},systems.wandering)
         this.addComponent({},systems.incentive)
+        this.addComponent({},systems.friction)
+
 
         this.addComponent(velocity,systems.velocity)
 
@@ -22,12 +24,15 @@ class Bee extends ECS.Entity {
 
 export const sim = new EventEmitter()
 
+let beez = []
+
 sim.once("scene-ready",() => {
 
     let thread = Promise.resolve();
+    let range = 2
 
     for(let i = 0;i < 100;i++) {
-        new Bee({x:0,y:0,z:0})
+        new Bee({x:0,y:0,z:0},{x:Math.random() * range,y:Math.random() * range,z:Math.random() * range})
     } 
 
     const render = async () => {

@@ -1,6 +1,17 @@
 import * as THREE from "three"
 
 import osn from "../lib/open-simplex-noise/index.ts";
+import ADT from "../lib/listadt"
+import  CircleBuffer  from "../lib/circleBuffer";
+
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
 
 class SceneSubject {
     get position () {return this._position}
@@ -14,25 +25,54 @@ class SceneSubject {
     get z() {return this.position.z}
     set z(v) {this.position.z = v}
 
+    updateMesh() {
+
+        const radius = 0.1;
+
+        this.mesh = new THREE.Mesh(
+            new THREE.IcosahedronBufferGeometry(radius, 1), 
+            new THREE.MeshStandardMaterial({ flatShading: true ,color:this.color})
+        );
+
+        this.mesh.position.set(this.position.x,this.position.y,this.position.z);
+
+        this.scene.add(this.mesh);
+    }
+    buildTailSegment() {
+        var points3D = new THREE.Geometry();
+        points3D.vertices.push( // here you can use 3-dimensional coordinates
+
+            new THREE.Vector3(this.mesh.position.x,this.mesh.position.y,this.mesh.position.z),
+            new THREE.Vector3(this.x,this.y,this.z),
+        );
+        var line = new THREE.Line(points3D, new THREE.LineBasicMaterial({ color: this.color }));
+        this.scene.add(line);
+
+        return this.tail.pushOver(line)[0]
+    }
+    updateTail() {
+        let r = this.buildTailSegment();
+        this.scene.remove(r)
+    }
 
     constructor(scene,position = {x : 10,y : 10,z : -20}) {
 
-        const radius = 2;
+
+        this.color = getRandomColor();
+        this.scene = scene;
         this._position = position
 
-        const mesh = new THREE.Mesh(
-            new THREE.IcosahedronBufferGeometry(radius, 2), 
-            new THREE.MeshStandardMaterial({ flatShading: true })
-        );
-
-        mesh.position.set(this.position.x,this.position.y,this.position.z);
-
-        scene.add(mesh);
+        this.updateMesh();
+        this.tail = new CircleBuffer(100);
         
         this.update = function(time) {
+
             //console.log(this.position.x,this.position.y,this.position.z)
-            mesh.position.set(this.position.x,this.position.y,this.position.z);
-            mesh.scale.set(0.1,0.1,0.1)
+
+            //this.updateMesh();
+            this.updateTail();
+            this.mesh.position.set(this.position.x,this.position.y,this.position.z);
+            this.mesh.scale.set(0.1,0.1,0.1)
 
         }
     }
@@ -40,12 +80,11 @@ class SceneSubject {
 class GeneralLights {
     constructor(scene) {
 	
-        const light = new THREE.PointLight("#2222ff", 1);
+        const light = new THREE.PointLight("#ffffff", 1);
         scene.add(light);
         
         this.update = function(time) {
             light.intensity = (Math.sin(time)+1.5)/1.5;
-            light.color.setHSL( Math.sin(time), 0.5, 0.5 );
         }
     }
 }
